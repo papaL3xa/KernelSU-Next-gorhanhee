@@ -1477,20 +1477,6 @@ LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
 }
 
 #ifdef CONFIG_KSU_LSM_SECURITY_HOOKS
-
-int ksu_bprm_check(struct linux_binprm *bprm)
-{
-	char *filename = (char *)bprm->filename;
-	
-	if (likely(!ksu_execveat_hook))
-		return 0;
-
-	ksu_handle_pre_ksud(filename);
-
-	return 0;
-
-}
-
 static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 			  unsigned long arg4, unsigned long arg5)
 {
