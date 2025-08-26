@@ -126,6 +126,11 @@ static int ksu_sucompat_user_common(const char __user **filename_user,
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 			 int *__unused_flags)
 {
+#ifndef CONFIG_KSU_KPROBES_HOOK
+	if (!ksu_sucompat_non_kp) {
+		return 0;
+	}
+#endif	
         if (!is_su_allowed((const void *)filename_user))
                 return 0;
 
@@ -154,6 +159,11 @@ struct filename* susfs_ksu_handle_stat(int *dfd, const char __user **filename_us
 // sys_newfstatat, sys_fstat64
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
+#ifndef CONFIG_KSU_KPROBES_HOOK
+	if (!ksu_sucompat_non_kp) {
+		return 0;
+	}
+#endif	
         if (!is_su_allowed((const void *)filename_user))
                 return 0;
 
