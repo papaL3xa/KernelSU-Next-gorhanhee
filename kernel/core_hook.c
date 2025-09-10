@@ -153,7 +153,7 @@ static inline bool is_allow_su()
 	return ksu_is_allow_uid(current_uid().val);
 }
 
-static inline bool is_unsupported_uid(uid_t uid)
+static inline bool is_unsupported_app_uid(uid_t uid)
 {
 #define LAST_APPLICATION_UID 19999
 	uid_t appid = uid % 100000;
@@ -1062,14 +1062,13 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	return 0;
 }
 
-static bool is_appuid(kuid_t uid)
+static bool is_non_appuid(kuid_t uid)
 {
 #define PER_USER_RANGE 100000
 #define FIRST_APPLICATION_UID 10000
-#define LAST_APPLICATION_UID 19999
 
 	uid_t appid = uid.val % PER_USER_RANGE;
-	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
+	return appid < FIRST_APPLICATION_UID;
 }
 
 static bool should_umount(struct path *path)
@@ -1177,62 +1176,36 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-#ifdef CONFIG_KSU_SUSFS
-	// check if current process is zygote
-	bool is_zygote_child = susfs_is_sid_equal(old->security, susfs_zygote_sid);
-	if (likely(is_zygote_child)) {
-		// if spawned process is non user app process
-		if (unlikely(new_uid.val < 10000 && new_uid.val >= 1000)) {
-#ifdef CONFIG_KSU_SUSFS_SUS_SU
-			// set flag if zygote spawned system process is allowed for root access
-			if (!ksu_is_allow_uid(new_uid.val)) {
-				task_lock(current);
-				susfs_set_current_proc_su_not_allowed();
-				task_unlock(current);
-			}
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-			// umount for the system process if path DATA_ADB_UMOUNT_FOR_ZYGOTE_SYSTEM_PROCESS exists
-			if (susfs_is_umount_for_zygote_system_process_enabled) {
-				goto out_try_umount;
-			}
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-		}
-		// - here we check if uid is a isolated service spawned by zygote directly
-		// - Apps that do not use "useAppZyogte" to start a isolated service will be directly
-		//   spawned by zygote which KSU will ignore it by default, the only fix for now is to
-		//   force a umount for those uid
-		// - Therefore make sure your root app doesn't use isolated service for root access
-		// - Kudos to ThePedroo, the author and maintainer of Rezygisk for finding and reporting
-		//   the detection, really big helps here!
-		else if (new_uid.val >= 90000 && new_uid.val < 1000000) {
-			task_lock(current);
-			susfs_set_current_non_root_user_app_proc();
-#ifdef CONFIG_KSU_SUSFS_SUS_SU
-			susfs_set_current_proc_su_not_allowed();
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
-			task_unlock(current);
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-			susfs_run_sus_path_loop(new_uid.val);
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
-#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-			if (susfs_is_umount_for_zygote_iso_service_enabled) {
-				goto out_susfs_try_umount_all;
-			}
-#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-		}
-	}
-#endif // #ifdef CONFIG_KSU_SUSFS
-
-	if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
-		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
+	if (is_non_appuid(new_uid)) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("handle setuid ignore non application uid: %d\n", new_uid.val);
+#endif
 		return 0;
+	}
+
+	// isolated process may be directly forked from zygote, always unmount
+	if (is_unsupported_app_uid(new_uid.val)) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("handle umount for unsupported application uid: %d\n", new_uid.val);
+#endif
+		goto do_umount;
 	}
 
 	if (ksu_is_allow_uid(new_uid.val)) {
-		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
+#endif
 		return 0;
 	}
+
+	if (!ksu_uid_should_umount(new_uid.val)) {
+		return 0;
+	} else {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("uid: %d should not umount!\n", current_uid().val);
+#endif
+	}
+
 #ifdef CONFIG_KSU_SUSFS
 	else {
 		task_lock(current);
@@ -1258,13 +1231,11 @@ out_try_umount:
 #endif
 	}
 
-#ifndef CONFIG_KSU_SUSFS
+do_umount:
 	// check old process's selinux context, if it is not zygote, ignore it!
 	// because some su apps may setuid to untrusted_app but they are in global mount namespace
 	// when we umount for such process, that is a disaster!
-	bool is_zygote_child = ksu_is_zygote(old->security);
-#endif
-	if (!is_zygote_child) {
+	if (!is_zygote(old->security)) {
 		pr_info("handle umount ignore non zygote child: %d\n",
 			current->pid);
 		return 0;
