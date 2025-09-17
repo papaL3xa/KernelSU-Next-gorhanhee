@@ -1245,14 +1245,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
-	if (!ksu_uid_should_umount(new_uid.val)) {
-		return 0;
-	} else {
-#ifdef CONFIG_KSU_DEBUG
-		pr_info("uid: %d should not umount!\n", current_uid().val);
-#endif
-	}
-
 #ifdef CONFIG_KSU_SUSFS
 	else {
 		task_lock(current);

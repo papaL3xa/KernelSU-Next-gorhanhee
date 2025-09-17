@@ -42,9 +42,9 @@ setup_kernelsu() {
     test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/GoRhanHee/KernelSU-Next.git && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
-    if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout next-susfs-experimental && echo "[-] Switched to next-susfs-experimental branch."
-    fi
+
+    git checkout next-susfs-experimental && echo "[-] Switched to next-susfs-experimental branch."
+
     git pull && echo "[+] Repository updated."
     if [ -z "${1-}" ]; then
         git checkout "$(git describe --abbrev=0 --tags)" && echo "[-] Checked out latest tag."
