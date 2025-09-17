@@ -1176,6 +1176,53 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		return 0;
 	}
 
+#ifdef CONFIG_KSU_SUSFS
+	// check if current process is zygote
+	bool is_zygote_child = susfs_is_sid_equal(old->security, susfs_zygote_sid);
+	if (likely(is_zygote_child)) {
+		// if spawned process is non user app process
+		if (unlikely(new_uid.val < 10000 && new_uid.val >= 1000)) {
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+			// set flag if zygote spawned system process is allowed for root access
+			if (!ksu_is_allow_uid(new_uid.val)) {
+				task_lock(current);
+				susfs_set_current_proc_su_not_allowed();
+				task_unlock(current);
+			}
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+			// umount for the system process if path DATA_ADB_UMOUNT_FOR_ZYGOTE_SYSTEM_PROCESS exists
+			if (susfs_is_umount_for_zygote_system_process_enabled) {
+				goto out_ksu_try_umount;
+			}
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+		}
+		// - here we check if uid is a isolated service spawned by zygote directly
+		// - Apps that do not use "useAppZyogte" to start a isolated service will be directly
+		//   spawned by zygote which KSU will ignore it by default, the only fix for now is to
+		//   force a umount for those uid
+		// - Therefore make sure your root app doesn't use isolated service for root access
+		// - Kudos to ThePedroo, the author and maintainer of Rezygisk for finding and reporting
+		//   the detection, really big helps here!
+		else if (new_uid.val >= 90000 && new_uid.val < 1000000) {
+			task_lock(current);
+			susfs_set_current_non_root_user_app_proc();
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+			susfs_set_current_proc_su_not_allowed();
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
+			task_unlock(current);
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+			susfs_run_sus_path_loop(new_uid.val);
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+			if (susfs_is_umount_for_zygote_iso_service_enabled) {
+				goto out_susfs_try_umount_all;
+			}
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+		}
+	}
+#endif // #ifdef CONFIG_KSU_SUSFS
+	
 	if (is_non_appuid(new_uid)) {
 #ifdef CONFIG_KSU_DEBUG
 		pr_info("handle setuid ignore non application uid: %d\n", new_uid.val);
