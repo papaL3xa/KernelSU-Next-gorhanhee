@@ -1193,7 +1193,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 			// umount for the system process if path DATA_ADB_UMOUNT_FOR_ZYGOTE_SYSTEM_PROCESS exists
 			if (susfs_is_umount_for_zygote_system_process_enabled) {
-				goto out_ksu_try_umount;
+				goto out_try_umount;
 			}
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 		}
