@@ -19,6 +19,7 @@
 #endif
 
 #include "objsec.h"
+#include "arch.h"
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"
