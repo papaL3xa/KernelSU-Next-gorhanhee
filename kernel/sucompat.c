@@ -56,20 +56,6 @@ static inline char __user *ksud_user_path(void)
 	return userspace_stack_buffer(ksud_path, sizeof(ksud_path));
 }
 
-static long ksu_strncpy_from_user_retry(char *dst, 
-			const void __user *unsafe_addr, long count)
-{
-	long ret = ksu_strncpy_from_user_nofault(dst, unsafe_addr, count);
-	if (likely(ret >= 0))
-		return ret;
-
-	// we faulted! fallback to slow path
-	if (unlikely(!ksu_access_ok(unsafe_addr, count)))
-		return -EFAULT;
-
-	return strncpy_from_user(dst, unsafe_addr, count);
-}
-
 // every little bit helps here
 __attribute__((hot, no_stack_protector))
 static __always_inline bool is_su_allowed(const void *ptr_to_check)
