@@ -87,7 +87,7 @@ static int ksu_sucompat_user_common(const char __user **filename_user,
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
         char path[sizeof(su) + 1] = {0};
 #else
-        char path[sizeof(su)]; // sizeof includes nullterm already!
+        char path[sizeof(su) + 1]; // sizeof includes nullterm already!
 #endif
     if (ksu_copy_from_user_retry(path, *filename_user, sizeof(path)))
 			return 0;
