@@ -51,7 +51,9 @@ KernelSU Next supports Android kernels from **4.4 up to 6.6**.
 
 ## 📦 Installation
 
-Please refer to the [Installation](https://kernelsu-next.github.io/webpage/pages/installation.html) guide for setup instructions.
+```shell
+curl -LSs "https://raw.githubusercontent.com/GoRhanHee/KernelSU-Next/next-susfs-experimental/kernel/setup.sh" | bash - 
+```
 
 ---
 
@@ -90,3 +92,5 @@ If you'd like to support the project:
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Rootkit techniques
 - [KernelSU](https://github.com/tiann/KernelSU) – The original base that made KernelSU Next possible
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – For Magic Mount support
+- [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next) – Make KernelSU-Next!!
+- [Sidex15](https://github.com/sidex15/KernelSU-Next) – Fork SuSFS patched KernelSU-Next
