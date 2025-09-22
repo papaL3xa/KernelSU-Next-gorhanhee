@@ -154,17 +154,18 @@ private fun SuperuserCard() {
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+        ),
+        modifier = Modifier.height(IntrinsicSize.Min)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = if (count <= 1) {
@@ -190,17 +191,18 @@ private fun ModuleCard() {
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+        ),
+        modifier = Modifier.height(IntrinsicSize.Min)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = if (count <= 1) {
