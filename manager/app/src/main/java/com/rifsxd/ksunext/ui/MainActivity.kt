@@ -45,6 +45,11 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -125,8 +130,15 @@ class MainActivity : ComponentActivity() {
             ) {
                 val navController = rememberNavController()
                 val snackBarHostState = remember { SnackbarHostState() }
+<<<<<<< HEAD
                 val currentDestination = navController.currentBackStackEntryAsState()?.value?.destination
 
+=======
+                val currentDestination = navController.currentBackStackEntryAsState().value?.destination
+                val bottomBarRoutes = remember {
+                    BottomBarDestination.entries.map { it.direction.route }.toSet()
+                }
+>>>>>>> ea3825b5 (manager: enhance navigation transitions for detail and tab screens)
                 val navigator = navController.rememberDestinationsNavigator()
 
                 LaunchedEffect(zipUri) {
@@ -176,10 +188,55 @@ class MainActivity : ComponentActivity() {
                             navGraph = NavGraphs.root,
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition
-                                    get() = { fadeIn(animationSpec = tween(340)) }
-                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition
-                                    get() = { fadeOut(animationSpec = tween(340)) }
+                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    if (targetState.destination.route !in bottomBarRoutes) {
+                                        // Slide in and fade in for detail screens
+                                        slideInHorizontally(
+                                            initialOffsetX = { it },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(animationSpec = tween(400))
+                                    } else {
+                                        // Tab switch: scale and fade
+                                        fadeIn(animationSpec = tween(340))
+                                    }
+                                }
+
+                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    if (initialState.destination.route in bottomBarRoutes && targetState.destination.route !in bottomBarRoutes) {
+                                        // Slide out and fade out for main->detail
+                                        slideOutHorizontally(
+                                            targetOffsetX = { -it / 2 },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeOut(animationSpec = tween(400))
+                                    } else {
+                                        // Tab switch: scale and fade
+                                        fadeOut(animationSpec = tween(340))
+                                    }
+                                }
+
+                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    if (targetState.destination.route in bottomBarRoutes) {
+                                        // Slide in from left and fade in for pop to main
+                                        slideInHorizontally(
+                                            initialOffsetX = { -it / 2 },
+                                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                                        ) + fadeIn(animationSpec = tween(400))
+                                    } else {
+                                        // Pop between details: fade in
+                                        fadeIn(animationSpec = tween(340))
+                                    }
+                                }
+
+                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    if (initialState.destination.route !in bottomBarRoutes) {
+                                        // Scale down and fade out for detail pop
+                                        scaleOut(targetScale = 0.85f, animationSpec = spring(stiffness = Spring.StiffnessLow)) +
+                                        fadeOut(animationSpec = tween(400))
+                                    } else {
+                                        // Tab pop: fade out
+                                        fadeOut(animationSpec = tween(340))
+                                    }
+                                }
                             }
                         )
                     }
