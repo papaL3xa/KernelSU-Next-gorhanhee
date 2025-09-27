@@ -67,6 +67,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val ksuVersion = if (isManager) Natives.version else null
+    val ksuVersionTag = if (isManager) Natives.getVersionTag() else null
 
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -97,7 +98,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
             }
 
-            StatusCard(kernelVersion, ksuVersion, lkmMode) {
+            StatusCard(kernelVersion, ksuVersion, lkmMode, ksuVersionTag = ksuVersionTag) {
                 navigator.navigate(InstallScreenDestination)
             }
 
@@ -415,6 +416,7 @@ private fun StatusCard(
     ksuVersion: Int?,
     lkmMode: Boolean?,
     moduleUpdateCount: Int = 0,
+    ksuVersionTag: String? = null,
     onClickInstall: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -524,8 +526,13 @@ private fun StatusCard(
                             )
                         }
 
+                        val versionText = if (!ksuVersionTag.isNullOrEmpty()) {
+                            stringResource(id = R.string.home_working_version, ksuVersionTag, ksuVersion ?: 0)
+                        } else {
+                            stringResource(id = R.string.home_working_version, "v0.0.0", ksuVersion ?: 0)
+                        }
                         Text(
-                            text = stringResource(R.string.home_working_version, ksuVersion),
+                            text = versionText,
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
