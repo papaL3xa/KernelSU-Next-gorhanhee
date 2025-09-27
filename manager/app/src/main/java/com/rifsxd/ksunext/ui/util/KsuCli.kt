@@ -707,11 +707,12 @@ fun getZygiskVersion(): String {
 
 fun getZygiskImplementation(): String {
     val modulesPath = "/data/adb/modules"
+    val zygiskModuleIds = arrayOf(
+        "rezygisk",
+        "zygisksu"
+    )
     return try {
-        val moduleDirs = ShellUtils.fastCmd("ls $modulesPath").lines()
-        moduleDirs.firstNotNullOfOrNull { moduleName ->
-            if (!moduleName.contains("zygisk", ignoreCase = true)) return@firstNotNullOfOrNull null
-            if (moduleName.contains("lsposed", ignoreCase = true)) return@firstNotNullOfOrNull null
+        zygiskModuleIds.firstNotNullOfOrNull { moduleName ->
             val modulePath = "$modulesPath/$moduleName"
             val isEnabled = ShellUtils.fastCmdResult("test -f $modulePath/module.prop && test ! -f $modulePath/disable")
             if (!isEnabled) return@firstNotNullOfOrNull null
@@ -726,11 +727,12 @@ fun getZygiskImplementation(): String {
 
 fun getZygiskVersion(): String {
     val modulesPath = "/data/adb/modules"
+    val zygiskModuleIds = arrayOf(
+        "rezygisk",
+        "zygisksu"
+    )
     return try {
-        val moduleDirs = ShellUtils.fastCmd("ls $modulesPath").lines()
-        moduleDirs.firstNotNullOfOrNull { moduleName ->
-            if (!moduleName.contains("zygisk", ignoreCase = true)) return@firstNotNullOfOrNull null
-            if (moduleName.contains("lsposed", ignoreCase = true)) return@firstNotNullOfOrNull null
+        zygiskModuleIds.firstNotNullOfOrNull { moduleName ->
             val modulePath = "$modulesPath/$moduleName"
             val isEnabled = ShellUtils.fastCmdResult("test -f $modulePath/module.prop && test ! -f $modulePath/disable")
             if (!isEnabled) return@firstNotNullOfOrNull null
