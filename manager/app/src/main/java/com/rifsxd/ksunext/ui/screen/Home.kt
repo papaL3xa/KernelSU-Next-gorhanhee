@@ -712,7 +712,7 @@ private fun InfoCard(autoExpand: Boolean = false) {
                         Spacer(Modifier.height(16.dp))
                         InfoCardItem(
                             label = stringResource(R.string.zygisk_status),
-                            content = stringResource(R.string.enabled),
+                            content = "${stringResource(R.string.enabled)} | ${getZygiskImplementation()} | ${getZygiskVersion()}",
                             icon = Icons.Filled.Vaccines
                         )
                     }
