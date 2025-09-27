@@ -1254,19 +1254,6 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
                // old process is not root, ignore it.
                return 0;
 	}
-
-	if (is_non_appuid(new_uid)) {
-#ifdef CONFIG_KSU_DEBUG
-		pr_info("handle setuid ignore non application uid: %d\n", new_uid.val);
-#endif
-		return 0;
-	}
-
-	// isolated process may be directly forked from zygote, always unmount
-	if (is_unsupported_app_uid(new_uid.val)) {
-#ifdef CONFIG_KSU_DEBUG
-		pr_info("handle umount for unsupported application uid: %d\n", new_uid.val);
-#endif
 		goto do_umount;
 	}
 
@@ -1317,6 +1304,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	try_umount("/apex/com.android.art/bin/dex2oat32", false, MNT_DETACH);
 
 	return 0;
+	
 }
 #endif // #ifdef CONFIG_KSU_SUSFS
 
