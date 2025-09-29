@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 val snackBarHostState = remember { SnackbarHostState() }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 val currentDestination = navController.currentBackStackEntryAsState()?.value?.destination
 
 =======
@@ -90,6 +91,8 @@ class MainActivity : ComponentActivity() {
                     BottomBarDestination.entries.map { it.direction.route }.toSet()
                 }
 >>>>>>> ea3825b5 (manager: enhance navigation transitions for detail and tab screens)
+=======
+>>>>>>> 3d98ed7f (manager: improvements and ui overhaul v2)
 =======
 >>>>>>> 3d98ed7f (manager: improvements and ui overhaul v2)
                 val navigator = navController.rememberDestinationsNavigator()
