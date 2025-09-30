@@ -39,11 +39,11 @@ perform_cleanup() {
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
     echo "[+] Setting up KernelSU-Next..."
-    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/GoRhanHee/KernelSU-Next.git && echo "[+] Repository cloned."
+    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/papaL3xa/KernelSU-Next-gorhanhee.git && echo "[+] Repository cloned."
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
 
-    git checkout next-susfs-experimental && echo "[-] Switched to next-susfs-experimental branch."
+    git checkout next-susfs-experiment && echo "[-] Switched to next-susfs-experiment branch."
     
     git pull && echo "[+] Repository updated."
 
