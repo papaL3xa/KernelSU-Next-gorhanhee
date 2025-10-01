@@ -19,6 +19,9 @@
 #include "kernel_compat.h"
 #include "throne_tracker.h"
 
+#define EXPECTED_MANAGER_SIZE 0x3e6
+#define EXPECTED_MANAGER_HASH "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"
+
 static unsigned int expected_manager_size = EXPECTED_MANAGER_SIZE;
 static char expected_manager_hash[SHA256_DIGEST_SIZE * 2 + 1] = EXPECTED_MANAGER_HASH;
 
