@@ -43,7 +43,7 @@ setup_kernelsu() {
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
 
-    git checkout 3defcc2 && echo "[-] Switched to 3defcc2 branch."
+    git checkout NewSU && echo "[-] Switched to NewSU branch."
     
     git pull && echo "[+] Repository updated."
 
