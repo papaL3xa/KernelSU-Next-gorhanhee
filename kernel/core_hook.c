@@ -1259,7 +1259,7 @@ do_umount:
 
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 	// We can reorder the mnt_id now after all sus mounts are umounted
-	susfs_reorder_mnt_id();
+	//susfs_reorder_mnt_id();
 #endif // #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 
 	susfs_set_current_non_root_user_app_proc();
