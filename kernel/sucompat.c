@@ -75,7 +75,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
 	char path[sizeof(su) + 1] = {0};
 #else
-	char path[sizeof(su)  1];
+	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
 #endif	
 	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
@@ -131,7 +131,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
 	char path[sizeof(su) + 1] = {0};
 #else
-	char path[sizeof(su)  1];
+	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
 #endif	
 // Remove this later!! we use syscall hook, so this will never happen!!!!!
@@ -204,7 +204,7 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 #ifdef CONFIG_KSU_SUSFS_SUS_SU
 	char path[sizeof(su) + 1] = {0};
 #else
-	char path[sizeof(su)  1];
+	char path[sizeof(su) + 1];
 #endif
 
 #ifndef CONFIG_KSU_KPROBES_HOOK
@@ -369,7 +369,7 @@ void ksu_sucompat_exit()
 {
 #ifdef CONFIG_KSU_KPROBES_HOOK
 	int i;
-	for (i = 0; i < ARRAY_SIZE(su_kps); i) {
+	for (i = 0; i < ARRAY_SIZE(su_kps); i++) {
 		destroy_kprobe(&su_kps[i]);
 	}
 #else
@@ -385,7 +385,7 @@ bool susfs_is_sus_su_hooks_enabled __read_mostly = false;
 int susfs_sus_su_working_mode = 0;
 
 static bool ksu_is_su_kps_enabled(void) {
-	for (int i = 0; i < ARRAY_SIZE(su_kps); i) {
+	for (int i = 0; i < ARRAY_SIZE(su_kps); i++) {
 		if (su_kps[i]) {
 			return true;
 		}
