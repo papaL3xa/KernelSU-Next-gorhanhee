@@ -1018,9 +1018,9 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	// all other cmds are for 'root manager'
-	if (!from_manager) {
-		return 0;
-	}
+	//if (!from_manager) {
+	//	return 0;
+	//}
 
 	// we are already manager
 	if (arg2 == CMD_GET_APP_PROFILE) {
