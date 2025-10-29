@@ -784,7 +784,7 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 		int len_of_variant = strlen(SUSFS_VARIANT);
 		char *susfs_variant = SUSFS_VARIANT;
 
-		susfs_cmd_err = copy_to_user((void __user*)arg3, (void*)susfs_variant, len_of_variant1);
+		susfs_cmd_err = copy_to_user((void __user*)arg3, (void*)susfs_variant, len_of_variant+1);
 		pr_info("susfs: CMD_SUSFS_SHOW_VARIANT -> ret: %d\n", susfs_cmd_err);
 		if (copy_to_user((void __user*)arg5, &susfs_cmd_err, sizeof(susfs_cmd_err)))
 			pr_info("susfs: copy_to_user() failed\n");
