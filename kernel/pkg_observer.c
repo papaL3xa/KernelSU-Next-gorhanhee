@@ -92,6 +92,7 @@ static const struct fsnotify_ops ksu_ops = {
 #endif
 };
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 static int add_mark_on_inode(struct inode *inode, u32 mask,
 			     struct fsnotify_mark **out)
 {
@@ -104,24 +105,43 @@ static int add_mark_on_inode(struct inode *inode, u32 mask,
 	fsnotify_init_mark(m, g);
 	m->mask = mask;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 	if (fsnotify_add_inode_mark(m, inode, 0)) {
 		fsnotify_put_mark(m);
 		return -EINVAL;
 	}
-#else /* TODO: Need more tests on k4.4 and k4.9! */
-	mutex_lock(&g->mark_mutex);
-	if (fsnotify_add_inode_mark(m, g, inode, 0)) {
-		fsnotify_put_mark(m);
-		mutex_unlock(&g->mark_mutex);
-		return -EINVAL;
-	}
-	mutex_unlock(&g->mark_mutex);
-#endif
 
 	*out = m;
 	return 0;
 }
+#else
+static void ksu_free_mark(struct fsnotify_mark *ksu_mark)
+{
+	if (ksu_mark)
+		kfree(ksu_mark);
+}
+static int add_mark_on_inode(struct inode *inode, u32 mask,
+			     struct fsnotify_mark **out)
+{
+	struct fsnotify_mark *ksu_mark;
+	int ret;
+
+	ksu_mark = kzalloc(sizeof(*ksu_mark), GFP_KERNEL);
+	if (!ksu_mark)
+		return -ENOMEM;
+
+	fsnotify_init_mark(ksu_mark, ksu_free_mark);
+	ksu_mark->mask = mask;
+
+	ret = fsnotify_add_mark(ksu_mark, g, inode, NULL, 0);
+	if (ret < 0) {
+		fsnotify_put_mark(ksu_mark);
+		return ret;
+	}
+
+	*out = ksu_mark;
+	return 0;
+}
+#endif /* LINUX_VERSION_CODE >= 4.12 */
 
 static int watch_one_dir(struct watch_dir *wd)
 {
@@ -162,8 +182,10 @@ static void unwatch_one_dir(struct watch_dir *wd)
 	}
 }
 
-static struct watch_dir g_watch = { .path = "/data/system",
-				    .mask = MASK_SYSTEM };
+static struct watch_dir g_watch = {
+	.path = "/data/system",
+	.mask = MASK_SYSTEM
+};
 
 int ksu_observer_init(void)
 {
@@ -178,7 +200,7 @@ int ksu_observer_init(void)
 		return PTR_ERR(g);
 
 	ret = watch_one_dir(&g_watch);
-	pr_info("observer init done\n");
+	pr_info("%s done.\n", __func__);
 	return 0;
 }
 
@@ -186,5 +208,5 @@ void ksu_observer_exit(void)
 {
 	unwatch_one_dir(&g_watch);
 	fsnotify_put_group(g);
-	pr_info("observer exit done\n");
+	pr_info("%s: done.\n", __func__);
 }
